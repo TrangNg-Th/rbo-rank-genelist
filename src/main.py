@@ -225,21 +225,21 @@ if __name__ == '__main__':
     # Simulate distribution for small number of elements
     # WARNING! ONLY EXECUTE WHEN NEEDED. USE ALREADY CREATED FILE INSTEAD
     for i in range(5, 11):
-        n = 8
+        n = i
         LS = SMallPermWORepl(n, l, path) 
     
     # OPEN ALREADY GENERATED FILE INSTEAD
-    f = open(path+f'/data/perm_list_len_8.txt', "r")    
+    f = open(path+f'/data/perm_list_len_10.txt', "r")    
     LSr = f.read().split(',')
     LSr = [float(i) for i in LSr]
     
     # Creating histogram
-    #fig, axs = plt.subplots(1, 1, figsize = (10, 7))
-    
-    #axs.hist(LSr)
-    #plt.suptitle(f'Distribution of similarity scores for lists of length {n}')
+    fig, axs = plt.subplots(1, 1, figsize = (10, 7))
+    axs.set_xlim([min(LSr), max(LSr)])
+    axs.hist(LSr)
+    plt.suptitle(f'Distribution of similarity scores for lists of length {n}')
     # Show plot
-    #plt.show()
+    plt.show()
 
 
 

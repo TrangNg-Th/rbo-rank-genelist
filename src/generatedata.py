@@ -685,7 +685,7 @@ def SMallPermWORepl(size, l, path, weightfunc=None, weightparams=None):
 
     
     LSch = str(LS)
-    LSch = LSch[2:-2]
+    LSch = LSch[1:-1]
     f = open(path+f'/data/perm_list_len_{n}.txt',  'w')
     f.write(LSch)
     f.close()
@@ -697,7 +697,7 @@ def SMallPermWORepl(size, l, path, weightfunc=None, weightparams=None):
     plt.suptitle(f'Distribution of similarity scores for lists of length {n}')
     # Show plot
     plt.show()
-  
+    print()
     print(f'Done generating scores, check file /data/perm_list_len_{n}.txt for result')
     return(LS)
 
