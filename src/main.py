@@ -8,16 +8,14 @@ This is a temporary script file.
 
  # Import module
 import os
-path = 'C:\\Users\\ttran\\Documents\\2022 - FALL SEMESTER IU\\2022_I552 Independent studies\\RBO\\src'
+path = '/home/nguyetrt/rbo-rank-genelist/src/'
 os.chdir(path)
-
 
 import numpy as np
 import argparse
 import pandas as pd
 
 import sys
-
 
 
 
@@ -125,7 +123,7 @@ if __name__ == '__main__':
     #dataframe = generatedatadefault(nbXk, nbrep, N, sd=seed)
     # Alternatively, call an already generated dataframe
     path = os.path.dirname(os.getcwd())
-    dataframe = pd.read_csv(path+'\\data\\testdata.csv', index_col=0)
+    dataframe = pd.read_csv(path+'/data/testdata.csv', index_col=0)
 
 
     # Check how different each expr is from baseline condition
@@ -213,7 +211,7 @@ if __name__ == '__main__':
     #    SMD(nbXk, nbrep, dataframe, condition, weightfuncs[i], weightparameters[i],\
     #        weightnames[i])
     #    print()
-    df = pd.read_csv(path+'\\data\\SkellamSim.csv')
+    df = pd.read_csv(path+'/data/SkellamSim.csv')
     
     
 # -----------------------------------------------------------------------------
@@ -228,7 +226,7 @@ if __name__ == '__main__':
     # List of all similarity scores for all permutations
     print()
     print(f'Build distribution for list of length {topk}')
-    with open(path+'\\data\\perm_sample.txt',  'w') as the_file:
+    with open(path+'/data/perm_sample.txt',  'w') as the_file:
         
         for i in range(len(L_p)): 
             e = np.round(SM(wsk, skelw, l[:topk], L_p[i]), 3)

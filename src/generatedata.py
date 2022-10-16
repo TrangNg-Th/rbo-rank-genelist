@@ -506,7 +506,7 @@ def generatedatadefault(nbXk, nbrep, N, sd):
 
     # Export data generated
     source = os.path.dirname(os.getcwd())
-    path = source + '\\data\\'
+    path = source + '/data/'
     name = "testdata.csv"
     dataframe.to_csv(path+name)
     
