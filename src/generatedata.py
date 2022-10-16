@@ -3,39 +3,61 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from matplotlib.patches import Rectangle
-import random 
+from random import random, choices, uniform, seed
 import pandas as pd
+from rbo import rbo_modified as SM
+from rbo import wg_geom as wgm, wg_binomial as wbi, wg_poisson as wpo, wg_skellam as wsk, wg_triangular as wtr
+import os
+import itertools
 
-
-
-from markovchain import MarkovChain
 
 
 def transitionMatrix(
+    
     p0: list = None,
     states = ['H', 'MH', 'M', 'LM', 'L'],
     matrix = None,
     d : dict = None,
     error_rate : float = None, 
     nb_replicates: int = 1,
-    seed=1):
+    sd = 1):
     """
     
-    Function to generate pk given a transition matrix and p0
-    Arg:
-        p0: list of expression values of baseline condition
-        states : list of states
-        matrix : transition matrix
-        d : dictionary of each states with their associated scale
-        error_rate : if error rate if False, use default "transition matrix" to go from Xk to Xk_prime
-        nb_replicate : number of replicates the user wants to produce
-        
-    return:
-        pk: list of expression values of baseline condition after the transition matrix
-        pkprimelist: list of list of expression values (pkprime) of Xk after the noise transition matrix 
+
+    Parameters
+    ----------
+    p0 : list, optional
+        LIST OF GENE EXPRESSIONS RANGING FROM 1 TO 100. The default is None.
+    
+    states : TYPE, optional
+        LIST OF STATES : HIGH, MEDIUM HIGH, MEDIUM, LOW MEDIUM, LOW.
+        The default is ['H', 'MH', 'M', 'LM', 'L'].
+    
+    matrix : TYPE, optional
+        MARKOV TRANSITION MATRIX. The default is None.
+    
+    d : dict, optional
+        DICTIONARY OF EACH STATES WITH THEIR RANGE. The default is None.
+    
+    error_rate : float, optional
+        IF NONE, USE THE DEFAULT TRANSITION MATRIX (HARD CODE IN THIS CODE). The default is None.
+    
+    nb_replicates : int, optional
+        NUMBER OF REPLICATES THE USER WANTS TO PRODUCE. The default is 1.
+    
+    sd : TYPE, optional
+        ARGUMENT FOR RANDOMIZATION. The default is 1.
+
+    Returns
+    -------
+    pk : list
+        LIST OF GENE EXPRESSIONS PRODUCED FROM pO * matrix
+    pkprimelist : list
+        LIST OF ALL REPLICATED GENE EXPRESSIONS
+
     """
     
-    random.seed(seed)
+    seed(sd)
     
     if p0.all() == None : return None
     
@@ -51,40 +73,40 @@ def transitionMatrix(
             [0.25, 0.02, 0.05, 0.65, 0.03],
             [0.4, 0.2, 0.15, 0.15, 0.1],
             [0.35, 0.2, 0.15, 0.15, 0.15]])
-    tmat = pd.DataFrame(matrix, index=states, columns=states)  # transition matrix from condition 0 to Xk
     
+    
+    #print(matrix)
+    tmat = pd.DataFrame(matrix, index=states, columns=states)  # transition matrix from condition 0 to Xk
+    #print(tmat)
     # give pk for condition k
     pk, state = [] , []
     for i in range(len(p0)):
         if p0[i] >= 80 : 
-            state_i = random.choices(states, weights=tmat[states[0]].values)[0]
+            state_i = choices(states, weights=tmat[states[0]].values)[0]
            
         elif (p0[i] >= 70) & (p0[i] < 80):
-            state_i = random.choices(states, weights=tmat[states[1]].values)[0]
+            state_i = choices(states, weights=tmat[states[1]].values)[0]
             
         elif (p0[i] >= 30) & (p0[i] < 70):
-            state_i = random.choices(states, weights=tmat[states[2]].values)[0]
+            state_i = choices(states, weights=tmat[states[2]].values)[0]
            
         elif (p0[i] >= 20) & (p0[i] < 30):
-            state_i = random.choices(states, weights=tmat[states[3]].values)[0]
+            state_i = choices(states, weights=tmat[states[3]].values)[0]
             
         elif (p0[i] < 20) :
-            state_i = random.choices(states, weights=tmat[states[4]].values)[0]
-        pk.append(random.uniform(d[state_i][0], d[state_i][1]))
+            state_i = choices(states, weights=tmat[states[4]].values)[0]
+        pk.append(uniform(d[state_i][0], d[state_i][1]))
         state.append(state_i) 
     
-    
-    print()
-    print('Displaying the transition matrix')
-    print(tmat)
-            
+
     # --------------------------
     # give list of pkprime from pk   
     pkprimelist, stateprimelist = [], []
     
     
     
-    # if noise was requested    
+    # if noise was requested  
+    ntmatlist = []
     for rep in range(nb_replicates):
         pkprime, stateprime = [], []
         
@@ -92,29 +114,31 @@ def transitionMatrix(
             nmatrix = ToleranceTransMat()
         
         else:
-            nmatrix = ToleranceTransMat(error_rate=error_rate)
+            nmatrix = ToleranceTransMat(error_rate = error_rate)
         ntmat = pd.DataFrame(nmatrix, index=states, columns=states)  # noise transition matrix
-     
+        
+        # Save the transition matrices
+        ntmatlist.append(ntmat)
         for i in range(len(pk)):
             if pk[i] >= 80 : 
-                state_i = random.choices(states, weights=ntmat[states[0]].values)[0]
+                state_i = choices(states, weights=ntmat[states[0]].values)[0]
                 
             elif (pk[i] >= 70) & (pk[i] < 80):
-                state_i = random.choices(states, weights=ntmat[states[1]].values)[0]
+                state_i = choices(states, weights=ntmat[states[1]].values)[0]
             
             elif (pk[i] >= 30) & (pk[i] < 70):
-                state_i = random.choices(states, weights=ntmat[states[2]].values)[0]
+                state_i = choices(states, weights=ntmat[states[2]].values)[0]
             
             
             elif (pk[i] >= 20) & (pk[i] < 30):
-                state_i = random.choices(states, weights=ntmat[states[3]].values)[0]
+                state_i = choices(states, weights=ntmat[states[3]].values)[0]
            
             elif (pk[i] < 20) :
-                state_i = random.choices(states, weights=ntmat[states[4]].values)[0]
+                state_i = choices(states, weights=ntmat[states[4]].values)[0]
             
             # if there's a change in the state of the current gene
             if state_i != state[i]:
-                pkprime.append(random.uniform(d[state_i][0], d[state_i][1]))
+                pkprime.append(uniform(d[state_i][0], d[state_i][1]))
             else:
                 pkprime.append(pk[i])
             stateprime.append(state_i)
@@ -122,17 +146,12 @@ def transitionMatrix(
         pkprimelist.append(pkprime)  # list of all the noisy replicates
         stateprimelist.append(stateprime)
         
-        print()
-        print('Displaying the noise transition matrix')
-        print(ntmat)
+    return(pk, state, tmat, pkprimelist, stateprimelist, ntmatlist)
 
-    
-    # Fix the Markov graph !!!
-    #mc = MarkovChain(matrix, states)
-    #mc.draw()
-    return(pk, state, tmat, pkprimelist, stateprimelist, ntmat)
+ 
 
-    
+
+# Print out histograms of gene expressions   
 def histogram(p, title):
     
     # default params
@@ -183,6 +202,12 @@ def histogram(p, title):
     plt.show()
     
 
+
+
+
+
+
+
 def printout(condition: str, p, n):
     """ Function to print out condition and the associated vector """
     print()
@@ -195,7 +220,7 @@ def printout(condition: str, p, n):
     print(f'Propotion of state L: {sum((p < 20)) / n}')
     print()
 
-    
+
     
     
 
@@ -204,12 +229,12 @@ def generatelist(
     n: int = 1000,
     Xk: str = 'Condition_1',
     mk = None,  # transition matrix to go from condition 0 to condition k
-    seed = 1, 
+    sd = 1, 
     nb_replicates: int = 1,
     conditionX0: list = None):
-    
     """
     Design : 
+    ---------
     We are interested in comparing two lists of genes in 'comparable contexts' (or comparable conditions).
     This function generates lists of modified conditioned based from one initial condition.
     
@@ -232,54 +257,79 @@ def generatelist(
             After putting our subjects through Xk, we retrieve a vector of gene expression values.
             Let's pk = the gene expression vector
             
+            
+
+    Parameters
+    ----------
+    n : int, optional
+        NUMBER OF GENES IN THE SAMPLE. The default is 1000.
         
-    Argument : 
-        n     -- number of gene in the sample
-        seed  -- set seed for reproducibility of random choice
-        Xk: experiment name
-        conditionX0: if not None, it should be a vector (list) of genes expression values of size n.
-        mk : transition matrix to go from conditionX0 to conditionXk
-        nb_replicates : number of replicates of Xk
+    Xk : str, optional
+        NAME OF THE EXPERIMENT. The default is 'Condition_1'.
         
-    Return :
-        conditionX0 :   if not None, it should be a vector (list) of genes expression values of size n.
-                        if None, it will return the hardcoded baseline condition
-    
-        p0 : vector of gene expression values of conditionX0
-        dk : dataframe of vector of gene expression values of conditionXk and conditionX0
+    mk : TYPE, optional
+        TRANSITION MATRIX TO GO FROM CONDTION 0 TO CONDITION K. The default is None.
         
-    
+    sd : TYPE, optional
+        ARGUMENT FOR REPRODUCIBILITY OF RANDOMIZATION. The default is 1.
+        
+    nb_replicates : int, optional
+        NUMBER OF REPLICATES FOR THE CURRENT EXPERIMENT. The default is 1.
+        
+    conditionX0 : list, optional
+        IF NOT NONE, IT SHOULD BE A LIST OF GENE EXPRESSIONS OF SIZE n
+        IF NONE, USE THE DEFAULT LIST. The default is None.
+
+    Returns
+    -------
+    p0 : LIST OF GENE EXPRESSIONS OF conditionX0
+    dk : DATAFRAME OF GENE EXPRESSIONS OF conditionXk, conditionX0
     """
     
-    random.seed(seed)
+    seed(sd)
     dk = pd.DataFrame(index=[f'gene_{i}' for i in range(n)])
     
     # PART 1 :    
     # generate baseline condition (if not given)
     if conditionX0 == None:
-        
-        print("Using default condition 0")
+                
+        #print("Using default condition 0")
         conditionX0 = "Condition_0"
         
-        pH = np.array(random.choices(range(80, 101), k = int(0.1 * n)))
-        pM = np.array(random.choices(range(30, 70), k = int(0.8 * n)))
-        pL = np.array(random.choices(range(0, 21), k = int(0.1 * n)))
-        p0 = np.concatenate((pH, pM, pL), axis=None)  
-        
+        pH = np.array(choices(range(80, 101), k = int(0.1 * n)))
+        pM = np.array(choices(range(30, 70), k = int(0.8 * n)))
+        pL = np.array(choices(range(0, 20), k = int(0.1 * n)))
+        p0 = np.concatenate((pH, pM, pL), axis=None)   
         
     else : 
+        assert conditionX0 == None, 'Currently, this data generator uses a default condition_0'
+   
+    
+    state0 = [] # Add the column of states for this baseline condition
+
+    for k in range(len(p0)):
+        if p0[k] >= 80:
+            state0.append('H')
+            
+        elif (p0[k] >= 70) & (p0[k] < 80):
+            state0.append('MH')
+            
+        elif (p0[k] >= 30) & (p0[k] < 70):
+            state0.append('M')
         
-        p0 = np.array([])
-        for k in exppr.keys():
-            p0 = np.concatenate((p0, np.array(exppr[k])), axis=None)
+        elif (p0[k] >= 20) & (p0[k] < 30):
+            state0.append('LM')
             
+        elif (p0[k] < 20):
+            state0.append('L')
             
+    
     # Display info
-    print('_'*50)
-    printout(conditionX0, p0, n)
+    #print('_'*50)
+    #printout(conditionX0, p0, n)
     #histogram(p0, title = conditionX0)
     dk[conditionX0] = p0
-    
+    dk[conditionX0 + '_state'] = state0   
     
     
   
@@ -287,21 +337,29 @@ def generatelist(
     # PART 2:     
     # for the experiment Xk, return the result vector of the experiment
     # simulate results from each condition
-    pk, statek, _, pkprimelist, statekp, _ = transitionMatrix(p0=p0, matrix=mk, seed=seed, 
-                                                              nb_replicates=nb_replicates) # transition matrix base from condition 0
-    dk[Xk] = pk
-    dk[Xk+'_state'] = statek
+    
+    
+    # transition matrix base from condition 0
+    pk, statek, tmatk, pkprimelist, statekplist, ntmatklist = transitionMatrix(\
+                p0=p0, matrix=mk, sd=seed, nb_replicates=nb_replicates) 
+    dk[Xk] = pk  # memorize gene expressions
+    dk[Xk+'_state'] = statek  # memorize states
     
     # Displaying results
-    printout(Xk, dk[Xk], n)
+    #printout(Xk, dk[Xk], n)
     #histogram(pk, title=Xk)
     
+    # Save the transition matrices in a dictionary
+    d = {}
+    d[Xk] = tmatk
+    
     # For the Xkprime
-    for i in range(len(statekp)):
-        dk[Xk+'_prime'+str(i+1)] = pkprimelist[i]
-        dk[Xk+'_primestate'+str(i+1)] = statekp[i]
-        printout(Xk+'prime'+str(i+1), dk[Xk+'_prime'+str(i+1)], n)
-    return(dk)
+    for i in range(len(statekplist)):
+        dk[Xk+'_prime_'+str(i+1)] = pkprimelist[i]
+        dk[Xk+'_prime_state_'+str(i+1)] = statekplist[i]
+        #printout(Xk+'_prime_'+str(i+1), dk[Xk+'_prime_'+str(i+1)], n)
+        d[Xk+'_prime_'+str(i+1)] = ntmatklist[i]
+    return(dk, d)
 
 
 
@@ -311,13 +369,32 @@ def ToleranceTransMat(
     error_rate : float = 0.05,
     states : list = ['H', 'MH', 'M', 'LM', 'L']):
     """
+    Design
+    ----------
+    In this simulation Xkprime = transition_matrix*Xk
+    where transition_matrix = Markov transition matrix
     
-    Given an error rate, return the transition matrix of size 5 x 5
     
+    Parameters
+    ----------
+    error_rate : float, optional
+        IN Xkprime THERE IS 1 - ERROR_RATE PERCENTAGE OF GENES THAT REMAIN WITHIN THE STATE.
+        The default is 0.05.
+    
+    states : list, optional
+        LIST OF STATES : HIGH, MEDIUM HIGH, MEDIUM, LOW MEDIUM, LOW.
+        The default is ['H', 'MH', 'M', 'LM', 'L'].
+
+    Returns
+    -------
+    matrix : 
+        MARKOV TRANSITION MATRIX
+
     """
-    print()
-    print(f'No error rate was given, default value = {error_rate}')
-    print()
+    
+   
+
+    
     matrix = np.empty([len(states), len(states)])
     for j in range(len(states)):
         for i in range(len(states)):
@@ -325,9 +402,234 @@ def ToleranceTransMat(
                 matrix[i,j] = error_rate / (len(states) - 1)  # divide evenly the error_rate to this position
             else:
                 matrix[i, j] = 1 - error_rate  # if we're on the diagonal, we'll have the biggest possibility
-                
     return(matrix)
             
     
     
+# Compare generated data between groups
+def comparegeneratedlist(dataframe,
+                         group0:str = 'Condition_0_state',
+                         group:str = 'Condition_1_state'):
+    """
+    Description :
+    ----------
+    GIVEN A DATAFRAME OF DIFFERENT GENE EXPRESSIONS,
+    RETURN THE AVERAGE NUMBER OF GENES THAT SWITCHED THE CATEGORY
+
+    Parameters
+    ----------
+    dataframe : TYPE
+        DATAFRAME OF DIFFERENT GENE EXPRESSIONS.
+        
+    group0 : str, optional
+        STATES OF A GIVEN CONDITION. The default is 'Condition_0_state'.
     
+    group : str, optional
+        STATES OF A GIVEN CONDITION. The default is 'Condition_1_state'.
+
+    Returns
+    -------
+    avg : 
+        COUNT NUMBER OF ELEMENTS THAT CHANGED THE CATEGORY
+
+    """
+    
+    similarity = {}
+    for i in dataframe[group].value_counts().index:
+        if i in dataframe[group0].value_counts().index:
+            res = (dataframe[group0].value_counts()[i] - dataframe[group].value_counts()[i])**2
+        else:
+            res = dataframe[group].value_counts()[i]
+        similarity[i] = res
+    
+    avg = np.sqrt(sum(similarity.values()))/5
+    return(avg)
+
+
+
+
+# Function to generate a dataframe
+
+# Call function to generate transition matrices for each Xk
+
+def generatedatadefault(nbXk, nbrep, N, sd):
+    """
+    
+
+    Parameters
+    ----------
+    nbXk : int
+        NUMBER OF EXPERIMENTS X
+    nbrep : int
+        NUMBER OF REPLICATES FOR EACH EXPERIMENTS
+    N : int
+        SAMPLE SIZE, NUMBER OF INDIVIDUALS
+    sd : int
+        RANDOMIZATION PARAMETER. SEED
+
+    Returns
+    -------
+    dataframe:
+        DATAFRAME OF ALL GENERATED DATA
+
+    """
+    
+    list_Xk = []  # list of transition matrices for k experiments X
+    
+    for n in range(nbXk):
+        seed(n)
+        res = []
+        
+        for i in range(5):
+            r = [random() for _ in range(5)]
+            s = sum(r)
+            res.append([k/s for k in r])
+            restmp = np.array(res)
+        list_Xk.append(restmp)
+    
+    
+    
+    print('Generating data....')
+    print(f'Sample size : {N}')
+    print(f'Number of experiments: {nbXk}')
+    print()
+    dataframe, transmatrix = generatelist(N, Xk='Condition_1', 
+                                          nb_replicates=nbrep, mk=list_Xk[0]) 
+
+    sd = 2
+    for mat in list_Xk[1:]:
+        name = 'Condition_' + str(sd)
+        dk, d = generatelist(N, Xk=name, sd=sd, nb_replicates=nbrep, mk=mat)
+        dataframe = pd.concat([dataframe, dk[dk.columns[2:]]], axis=1)
+        transmatrix.update(d)
+        sd += 1
+
+    # Export data generated
+    source = os.path.dirname(os.getcwd())
+    path = source + '\\data\\'
+    name = "testdata.csv"
+    dataframe.to_csv(path+name)
+    
+    print(f'Done. Check data in {path}\n Filename: {name}')
+    return(dataframe)
+
+
+
+def similarityscorealldata(nbXk, nbrep, dataframe, condition, weightfunc, weightparams, namedf = None):
+    """
+    
+
+    Parameters
+    ----------
+    nbXk : int
+        NUMBER OF EXPERIMENTS X
+    nbrep : int
+        NUMBER OF REPLICATES FOR EACH EXPERIMENTS
+    dataframe:
+        DATAFRAME OF ALL GENERATED DATA
+    condition : TYPE
+        CONDITION WHICH FILTERS OUT THE GENES WHICH BELONG TO A SPECIFIC CATEGORY
+    weightfunc : TYPE
+        CHOSEN WEIGHTING SCHEMES.
+    weightparams : TYPE
+        DICTIONARY OF PARAMETERS ASSOCIATED WITH WEIGHTING SCHEMES
+    namedf : (optional)
+        NAME OF DATAFRAME TO BE GENERATED
+
+    Returns
+    -------
+    df : DATAFRAME OF PAIRWISE SIMILARITY SCORES
+
+    """
+   
+    # Create dataframe of pairwiser similarity score for each experiment & replicates
+   
+    collist = []
+    for k in range(1, nbXk+1):
+        for j in range(0, nbrep+1):
+            if j == 0:
+                collist.append(f'Condition_{k}')
+            else:
+                collist.append(f'Condition_{k}_prime_{j}')
+    
+    # Create a matrix to compare rbo scores
+    df = pd.DataFrame(index=collist, columns=collist)
+    
+    
+    lindex = list(df.index)
+    for i in lindex:
+        name_i = i
+        
+        if 'prime' in i:
+            state_i = '_'.join(i.split('_')[:-1]) + '_state_' + i.split('_')[-1]
+            
+        else:
+            state_i = i + '_state'
+        
+        #print('name_i', name_i)
+            
+        for j in lindex:
+            name_j = j
+            if 'prime' in j:
+                state_j = '_'.join(j.split('_')[:-1]) + '_state_' + j.split('_')[-1]
+            else:
+                state_j = j + '_state'
+            
+            c1 = (dataframe[state_i] == condition)   
+            l1 = list(dataframe[c1].sort_values(name_i, ascending=False).index)
+           
+            c2 = (dataframe[state_j] == condition)  
+            l2 = list(dataframe[c2].sort_values(name_j, ascending=False).index)
+
+            
+            s = SM(weightfunc, weightparams, l1, l2)
+            df.loc[name_i, name_j] = np.round(s, 4)
+            
+    # Export data generated
+    if namedf == None:
+        name = "SM_data.csv"
+    else:
+        name = namedf
+        
+    source = os.path.dirname(os.getcwd())
+    path = source + '\\data\\'
+    df.to_csv(path+name)
+    df = pd.read_csv(path+name)
+    
+    print(f'Done. Check data in {path}\n Filename: {name}')
+    return(df)
+           
+    
+    
+    
+def PermutationWORepl(l):
+    """
+    
+
+    Parameters
+    ----------
+    l : list
+        LIST CONTAINS UNIQUE ELEMENTS
+
+    Returns
+    -------
+    L_p : list
+        LIST OF ALL PERMUTATIONS OF THIS LIST
+
+    """
+    
+    n = len(l)
+    T_p = list(itertools.permutations(l, n))
+    L_p = [list(i) for i in T_p]
+    return(L_p)
+    
+
+    
+        
+
+    
+    
+
+        
+        
+        

@@ -1,14 +1,13 @@
 
 # -*- coding: utf-8 -*-
 """
-Created on Sat Sep 10 08:58:37 2022
 
 @author: ttran
 """
 
 from scipy.stats import poisson
 from scipy.special import binom
-import matplotlib.pyplot as plt
+from scipy.stats import skellam, triang
 
 # Implementation of original rbo
 
@@ -121,7 +120,6 @@ def rbo(
 
 
 # Implementation of rbo with a given function
-
 def rbo_modified(
                 wg_func,
                 params_wg_func : dict,
@@ -193,24 +191,24 @@ def rbo_modified(
         
     elif 'hypergeometric' in params_wg_func:
         weights = [wg_hypergeom(params_wg_func, d) for d in range(k)]
-        #print(weights)
-        #t = range(k)
-        #plt.plot(t, weights, ':')
-        #plt.show()
-        
+      
+  
     elif 'binomial' in params_wg_func:
         weights = [wg_binomial(params_wg_func, d) for d in range(k)]
-        #print(weights)
-        #t = range(k)
-        #plt.plot(t, weights, ':')
-        #plt.show()
+       
+    elif 'skellam' in params_wg_func:
+        weights = [wg_skellam(params_wg_func, d) for d in range(k)]
+        
+    elif 'triangular' in params_wg_func:
+        weights = [wg_triangular(params_wg_func, d/len(range(k))) for d in range(k)]
+        weights = weights/sum(weights)  # Normalize
+        
     
     # case of first element in list
     A[0] = 1.0 if S[0] == T[0] else 0
     AO[0] = weights[0] if S[0] == T[0] else 0
 
     
-
     for d in range(1, k):  # Go through each depth to level d
         
         # define the intersection of subset of S[:d] w/ the subset of T[:d]
@@ -281,7 +279,6 @@ def wg_geom(params_wg_func : dict, d):
 # Negative hypergeometric distribution
 # https://en.wikipedia.org/wiki/hypergeometric_distribution
 def wg_hypergeom(params_wg_func : dict, d):
-    
     """
     Arguments:
         params_wg_func : [N: total number of elements,
@@ -299,7 +296,25 @@ def wg_hypergeom(params_wg_func : dict, d):
 
 
 
-# Binomial distribution
+# Skellam distribution
+
+def wg_skellam(params_wg_func : dict, d):
+    
+    """
+    Arguments:
+        params_wg_func : [n: nb of elements to be considered
+                          p : probability of success]
+        d = current rank of evaluation
+        
+    """
+   
+    mu1 = params_wg_func['mu1']
+    mu2 = params_wg_func['mu2']
+    res = skellam.pmf(d, mu1, mu2)
+    
+    return(res)
+
+
 
 def wg_binomial(params_wg_func : dict, d):
     
@@ -316,6 +331,28 @@ def wg_binomial(params_wg_func : dict, d):
     res = binom(n, d) * (p**d) * (1-p)**(n-d)
     
     return(res)
+
+
+
+# Triangular distribution
+
+def wg_triangular(params_wg_func : dict, d):
+    
+    """
+    Arguments:
+        params_wg_func : 
+        d = current rank of evaluation
+        
+    """
+    
+    topk = params_wg_func['topk']
+    c = 1.0
+    scale = c/topk
+    #norm = sum(triang.pdf(1000, c=c, scale=scale))
+    res = triang.pdf(d, c=c, scale=scale)
+    
+    return(res)
+
 
     
     

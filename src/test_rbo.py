@@ -1,11 +1,10 @@
-"""
-This module contains some test cases.
-"""
-
+# THIS MODULE CONTAINS TESTS FOR RBO MEASURE
 
 import numpy as np
 import string
 from rbo import rbo, rbo_modified, wg_geom
+
+
 
 TESTS = [
     # Sanity checks
@@ -52,8 +51,7 @@ def test_rbo(list_1: list, list_2: list, p=0.5):
     
     
     
-# TEST CASE FOR MODIFIED RBO WITH SAME WEIGHT FUNCTION    
-    
+# TEST CASE FOR MODIFIED RBO WITH SAME WEIGHT FUNCTION     
 def test_rbo_vs_rbo_modified(list_1: list, list_2: list, p=0.5):
     """
     Args:
