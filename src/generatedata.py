@@ -8,6 +8,7 @@ import pandas as pd
 from rbo import rbo_modified as SM
 from rbo import wg_geom as wgm, wg_binomial as wbi, wg_poisson as wpo, wg_skellam as wsk, wg_triangular as wtr
 import os
+import sys
 import itertools
 
 
@@ -623,6 +624,82 @@ def PermutationWORepl(l):
     L_p = [list(i) for i in T_p]
     return(L_p)
     
+
+
+
+def SMallPermWORepl(size, l, path, weightfunc=None, weightparams=None):
+    """
+    
+
+    Parameters
+    ----------
+    size : INT
+        NUMBER OF ELEMENT TO BE PERMUTED. ONLY CONSIDER l[:INT]
+    l : LIST
+        LIST OF ELEMENTS TO BE PERMUTED
+     path : STR
+         PATH WHERE TO SAVE THE GENERATED FILES.
+    weightfunc : FUNCT
+        FUNCTION WHICH PRODUCE APPROPRIATE WEIGHTING SCHEMES
+    weightparams : DICTIONARY
+        DICTIONARY OF PARAMETERS ASSOCIATED WITH WEIGHTING SCHEMES
+   
+    Returns
+    -------
+    LS: LIST:
+        LIST OF ALL SIMILARITY SCORES FOR PERMUTATION WITHOUT REPLACEMENT
+
+    """
+    
+    
+    
+    
+    
+    
+    # Define varaibles 
+    n = size
+    L_p = PermutationWORepl(l[:n])  # list of all permutations of l[:topk]
+    LS = []
+    div = len(L_p)/100
+    
+    if (weightfunc is None) | (weightparams is None):
+        print('No weighting scheme chosen, will use the triangular weighting scheme')
+        weightparams = {'triangular': None, 'topk': n}
+        weightfunc = wtr
+    
+    
+    # List of all similarity scores for all permutations
+    print()
+    print(f'Build similarity scores distribution for lists of length {n}')
+    j, count = 0, 1
+    for i in range(len(L_p)): 
+        e = np.round(SM(weightfunc,weightparams, l[:n], L_p[i]), 3)
+        LS.append(e)
+        
+        if (i >= j) :
+            sys.stdout.write('\r')
+            sys.stdout.write("[%-1s] %d%%" % ('='*count, count))
+            sys.stdout.flush()
+            j += div
+            count +=1
+
+    
+    LSch = str(LS)
+    LSch = LSch[2:-2]
+    f = open(path+f'/data/perm_list_len_{n}.txt',  'w')
+    f.write(LSch)
+    f.close()
+    
+    # Creating histogram
+    fig, axs = plt.subplots(1, 1, figsize =(10, 7))
+    
+    axs.hist(LS)
+    plt.suptitle(f'Distribution of similarity scores for lists of length {n}')
+    # Show plot
+    plt.show()
+  
+    print(f'Done generating scores, check file /data/perm_list_len_{n}.txt for result')
+    return(LS)
 
     
         

@@ -202,7 +202,7 @@ def rbo_modified(
     elif 'triangular' in params_wg_func:
         weights = [wg_triangular(params_wg_func, d/len(range(k))) for d in range(k)]
         weights = weights/sum(weights)  # Normalize
-        
+        #print(weights)
     
     # case of first element in list
     A[0] = 1.0 if S[0] == T[0] else 0
@@ -347,9 +347,10 @@ def wg_triangular(params_wg_func : dict, d):
     
     topk = params_wg_func['topk']
     c = 1.0
-    scale = c/topk
+    scale = topk
+    loc = 0
     #norm = sum(triang.pdf(1000, c=c, scale=scale))
-    res = triang.pdf(d, c=c, scale=scale)
+    res = triang.pdf(d, c=c, scale=scale, loc=loc)
     
     return(res)
 

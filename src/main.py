@@ -12,9 +12,9 @@ path = '/home/nguyetrt/rbo-rank-genelist/src/'
 os.chdir(path)
 
 import numpy as np
-import argparse
-import pandas as pd
-
+import argparse  # check input arguments
+import pandas as pd  # handle dataframe
+import math   # display progress in simulation
 import sys
 
 
@@ -22,12 +22,19 @@ import sys
 
 
 from generatedata import comparegeneratedlist
-from generatedata import PermutationWORepl
+from generatedata import SMallPermWORepl
 #from generatedata import generatedatadefault
 #from generatedata import similarityscorealldata as SMD
 
+
+from scipy.stats import skellam
+from scipy.stats import triang 
+
 from rbo import rbo_modified as SM
 from rbo import wg_geom as wgm, wg_binomial as wbi, wg_poisson as wpo, wg_skellam as wsk, wg_triangular as wtr
+
+
+import matplotlib.pyplot as plt
 
 # Set working directory
 
@@ -217,37 +224,22 @@ if __name__ == '__main__':
 # -----------------------------------------------------------------------------
     # Simulate distribution for small number of elements
     # WARNING! ONLY EXECUTE WHEN NEEDED. USE ALREADY CREATED FILE INSTEAD
+    for i in range(5, 11):
+        n = 8
+        LS = SMallPermWORepl(n, l, path) 
     
-    # Define varaibles 
-    L_p = PermutationWORepl(l[:topk])  # list of all permutations of l[:topk]
-    LS = []
+    # OPEN ALREADY GENERATED FILE INSTEAD
+    f = open(path+f'/data/perm_list_len_8.txt', "r")    
+    LSr = f.read().split(',')
+    LSr = [float(i) for i in LSr]
     
+    # Creating histogram
+    #fig, axs = plt.subplots(1, 1, figsize = (10, 7))
     
-    # List of all similarity scores for all permutations
-    print()
-    print(f'Build distribution for list of length {topk}')
-    for i in range(len(L_p)): 
-        e = np.round(SM(wsk, skelw, l[:topk], L_p[i]), 3)
-        LS.append(e)
-        if i % 36288 == 0:
-            j = i // 36288
-            sys.stdout.write('\r')
-            sys.stdout.write("[%-1s] %d%%" % ('='*j, j))
-            sys.stdout.flush()
-            
-                
-            
-    
-    #LSch = str(LS)
-    #f = open(path+'/data/perm_sample.txt',  'w')
-    #f.write(LSch)
-    #f.close()
-  
-    f = open(path+'/data/perm_sample.txt', "r")    
-    LSr = f.read()
-    
-# -----------------------------------------------------------------------------
-
+    #axs.hist(LSr)
+    #plt.suptitle(f'Distribution of similarity scores for lists of length {n}')
+    # Show plot
+    #plt.show()
 
 
 
