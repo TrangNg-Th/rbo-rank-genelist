@@ -29,6 +29,7 @@ from generatedata import SMallPermWORepl
 
 from scipy.stats import skellam
 from scipy.stats import triang 
+from scipy.stats import shapiro
 
 from rbo import rbo_modified as SM
 from rbo import wg_geom as wgm, wg_binomial as wbi, wg_poisson as wpo, wg_skellam as wsk, wg_triangular as wtr
@@ -224,12 +225,12 @@ if __name__ == '__main__':
 # -----------------------------------------------------------------------------
     # Simulate distribution for small number of elements
     # WARNING! ONLY EXECUTE WHEN NEEDED. USE ALREADY CREATED FILE INSTEAD
-    for i in range(5, 11):
+    for i in range(10, 16):
         n = i
         LS = SMallPermWORepl(n, l, path) 
     
     # OPEN ALREADY GENERATED FILE INSTEAD
-    f = open(path+f'/data/perm_list_len_10.txt', "r")    
+    f = open(path+f'/data/perm_list_len_{7}.txt', "r")    
     LSr = f.read().split(',')
     LSr = [float(i) for i in LSr]
     
@@ -240,6 +241,14 @@ if __name__ == '__main__':
     plt.suptitle(f'Distribution of similarity scores for lists of length {n}')
     # Show plot
     plt.show()
+    
+    
+    #Normality test
+    shapiro(LSr)
+    data_points = np.array(LSr)   
+
+    sm.qqplot(data_points, line='s', fit=True)
+    py.show()
 
 
 
