@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from matplotlib.patches import Rectangle
-from random import random, choices, uniform, seed
+from random import random, choices, uniform, seed, sample, randint
 import pandas as pd
 from rbo import rbo_modified as SM
 from rbo import wg_geom as wgm, wg_binomial as wbi, wg_poisson as wpo, wg_skellam as wsk, wg_triangular as wtr
@@ -603,108 +603,280 @@ def similarityscorealldata(nbXk, nbrep, dataframe, condition, weightfunc, weight
     
     
     
-def PermutationWORepl(l):
+# =============================================================================
+# def PermutationWORepl(l):
+#     """
+#     
+# 
+#     Parameters
+#     ----------
+#     l : list
+#         LIST CONTAINS UNIQUE ELEMENTS
+# 
+#     Returns
+#     -------
+#     L_p : list
+#         LIST OF ALL PERMUTATIONS OF THIS LIST
+# 
+#     """
+#     
+#     n = len(l)
+#     T_p = list(itertools.permutations(l, n))
+#     L_p = [list(i) for i in T_p]
+#     return(L_p)
+#     
+# =============================================================================
+
+# =============================================================================
+# 
+# 
+# def Smallpermutationwithrepl(size_l: int = 5, 
+#                              output_path: str = '/home/nguyetrt/rbo-rank-genelist/data/', 
+#                              nb_repl: int = 0,
+#                              l: list = None,
+#                              weightfunc: list = None, 
+#                              weightparams: list = None, 
+#                              nb_randomization: int = 100
+#                              ):
+#     """
+#     
+# 
+#     Parameters
+#     ----------
+#     size_l : INT
+#         SIZE OF THE INPUT LIST. GIVE l IS GIVEN, THIS ARG WILL BE DISCARDED
+#         
+#     output_path : str
+#         PATH WHERE TO SAVE THE GENERATED FILES.
+#         
+#     nb_repl: int, optional
+#         NUMBER OF ELEMENTS TO BE REPLACED. the default is 0
+#         
+#     l : list, optional
+#         LIST OF ELEMENTS TO BE PERMUTED. The default is None.
+#         
+#    
+#     weightfunc : list, optional
+#         FUNCTION WHICH PRODUCE APPROPRIATE WEIGHTING SCHEMES. The default is None.
+#         
+#     weightparams : list, optional
+#         DICTIONARY OF PARAMETERS ASSOCIATED WITH WEIGHTING SCHEMES. The default is None.
+#         
+#     nb_randomization : int, optional
+#         NUMBER OF LIST TO BE RETURNED
+#     
+# 
+#     Returns
+#     -------
+#     None.
+# 
+#     """
+#    
+#     # if l is None, generate a list of [1,...,size_l]
+#     # l = [0,..., size_l]
+#     # l_ref = [0,..., size_l - nb_repl]
+#     if l == None:
+#         l_ref = list(np.arange(0, size_l-nb_repl, 1))  # generate a random list of size (size_l - nb_repl)
+#         l = list(np.arange(0, size_l, 1))
+#     
+#     else:
+#         assert l is None, "This function will generate a list"
+#     
+#     
+#     
+#     max_l = max(l)  # set for the biggest number
+# 
+#     # verify if there is any replacement element
+#     print()
+#     print(f'Build similarity scores distribution for lists of length {size_l} and {nb_repl} replacements')
+#     
+#     # in case there's replacement, l
+#     while nb_repl > 0:
+#         r = randint(max_l+1, max_l+1000)
+#         nb_repl -= 1 
+#         l_ref += [r]
+# 
+# 
+#     l_permutations = [l_ref]
+# 
+#     # shuffle the list l, to return a list of random l
+#     while nb_randomization - 1> 0:
+#         l_shuffled = sample(l_ref, k=len(l_ref))
+#         l_permutations.append(l_shuffled)
+#         nb_randomization -= 1
+#     
+#     
+#     
+#     if (weightfunc is None) | (weightparams is None):
+#         print('No weighting scheme chosen, will use the triangular weighting scheme')
+#         weightparams = {'triangular': None, 'topk': size_l}
+#         weightfunc = wtr
+#     
+#     
+#     # List of all similarity scores for all permutations       
+#     j, count = 0, 1
+#     div = np.floor(len(l_permutations)/100)
+#     
+#     l_scores = []
+#     
+#     for i in range(len(l_permutations)): 
+#         l_shuffle = l_permutations[i]
+#         e = np.round(SM(weightfunc, weightparams, l, l_shuffle), 3)
+#         l_scores.append(e)
+#         
+#         if (i >= j) :
+#             sys.stdout.write('\r')
+#             sys.stdout.write("[%-1s] %d%%" % ('='*count, count))
+#             sys.stdout.flush()
+#             j += div
+#             count +=1
+# 
+#     l_permutations.append(l)
+#     l_scores.append(np.round(SM(weightfunc, weightparams, l, l), 3))
+#     l_scores_str = str(l_scores)
+#     l_scores_str = l_scores_str[1:-1]
+#     f = open(output_path + f'perm_list_len_{size_l}.txt',  'w')
+#     f.write(l_scores_str)
+#     f.close()
+#     
+#     # Creating histogram
+#     #fig, axs = plt.subplots(1, 1, figsize =(10, 7))
+#     #axs.hist(l_scores)
+#     #plt.suptitle(f'Distribution of similarity scores for lists of length {size_l}')
+#     # Show plot
+#     #plt.show()
+#     print()
+#     print(f'Done generating scores, check file /data/perm_list_len_{size_l}.txt for result')
+#     return(l_permutations, l_scores)
+# 
+#     
+#         
+# =============================================================================
+
+  
+
+
+
+def simulation(size_l: int = 10, 
+               withreplacement: bool = False,
+               output_path: str = '/home/nguyetrt/rbo-rank-genelist/data/', 
+               weightfunc: list = None, 
+               weightparams: list = None, 
+               nb_generatedlist: int = 50,
+               size_vocabulary: int = 100,
+               Nb_r: int = 1):
     """
     
 
     Parameters
     ----------
-    l : list
-        LIST CONTAINS UNIQUE ELEMENTS
+    size_l : int, optional
+        The size of the list to be generated. The default is 20.
+    withreplacement: bool, optional
+        Parameter that controls if the user wants to include replacement of elements in the the simulation
+    output_path : str, optional
+        The directory to save generated file. The default is '/home/nguyetrt/rbo-rank-genelist/data/'.
+    sd : int, optional
+        An integer to fix the randomization. The default is 1.
+    weightfunc : list, optional
+        Weighting function to be applied. The default is None.
+    weightparams : list, optional
+        Dictionary of parameters associated with the chosen weighting scheme. The default is None.
+    nb_generatedlist : int, optional
+        Number of desired elements to be generated by this function. The default is 100.
+    size_vocabulary: int, optional
+        The size of the characters for the list l to be generated from. The default is 100.
+    Nb_r: int, optional
+        Number of elements that will be replaced if the "withreplacement" parameter is chosen.
+        The default is 1
 
     Returns
     -------
-    L_p : list
-        LIST OF ALL PERMUTATIONS OF THIS LIST
+    None.
 
     """
     
-    n = len(l)
-    T_p = list(itertools.permutations(l, n))
-    L_p = [list(i) for i in T_p]
-    return(L_p)
+    n = nb_generatedlist
+    V = np.arange(0, size_vocabulary, 1)
     
+    # part 1: simulate a list of rankings
+    
+    if withreplacement == False:  # if there's no replacement to be considered in the model
+        l = list(np.arange(0, size_l, 1))
+        
+        # result 
+        output = [l]
+        
+        while n > 0:
+            l_shuffle = sample(l, k=len(l))  # generate a shuffled version of l
+            output.append(l_shuffle)
+            n -= 1 
+        
+    
+    else:  # if we do consider the replacement, then 
+        output = []
+        while n > 0:
+            #seed(n)
+            # 1. randomly generate a number Nb_r : this is the number of replacement in the ranking
+            Nb_r = randint(0, size_l)
+            print('Number of replaced items=', Nb_r)
 
+            # l = [0, 1, ...., size_l - Nb_r]
+            l = list(np.arange(0, size_l - Nb_r))   
+            
+            
+            # 2. Complete the rest by generating random number not in l
+            for i in range(size_l - Nb_r, size_l):
+                #seed(n + i)
+                r = randint(V[i], V[-1]) # generate a number to fill in l
+                l.append(r)
+                
+            # 3 . Additional shuffling of the list
+            l = sample(l, k=len(l))  
+            
+            output.append(l)
+            n -= 1        
 
-
-def SMallPermWORepl(size, l, path, weightfunc=None, weightparams=None):
-    """
-    
-
-    Parameters
-    ----------
-    size : INT
-        NUMBER OF ELEMENT TO BE PERMUTED. ONLY CONSIDER l[:INT]
-    l : LIST
-        LIST OF ELEMENTS TO BE PERMUTED
-     path : STR
-         PATH WHERE TO SAVE THE GENERATED FILES.
-    weightfunc : FUNCT
-        FUNCTION WHICH PRODUCE APPROPRIATE WEIGHTING SCHEMES
-    weightparams : DICTIONARY
-        DICTIONARY OF PARAMETERS ASSOCIATED WITH WEIGHTING SCHEMES
-   
-    Returns
-    -------
-    LS: LIST:
-        LIST OF ALL SIMILARITY SCORES FOR PERMUTATION WITHOUT REPLACEMENT
-
-    """
-    
-    
-    
-    
-    
-    
-    # Define varaibles 
-    n = size
-    L_p = PermutationWORepl(l[:n])  # list of all permutations of l[:topk]
-    LS = []
-    div = len(L_p)/100
+    # Part 2: Similarity ranking measure evaluation
     
     if (weightfunc is None) | (weightparams is None):
         print('No weighting scheme chosen, will use the triangular weighting scheme')
-        weightparams = {'triangular': None, 'topk': n}
+        weightparams = {'triangular': None, 'topk': size_l}
         weightfunc = wtr
     
     
-    # List of all similarity scores for all permutations
-    print()
-    print(f'Build similarity scores distribution for lists of length {n}')
-    j, count = 0, 1
-    for i in range(len(L_p)): 
-        e = np.round(SM(weightfunc,weightparams, l[:n], L_p[i]), 3)
-        LS.append(e)
-        
-        if (i >= j) :
-            sys.stdout.write('\r')
-            sys.stdout.write("[%-1s] %d%%" % ('='*count, count))
-            sys.stdout.flush()
-            j += div
-            count +=1
-
     
-    LSch = str(LS)
-    LSch = LSch[1:-1]
-    f = open(path+f'/data/perm_list_len_{n}.txt',  'w')
-    f.write(LSch)
-    f.close()
+    output_scores = []
+    
+    for i in range(len(output)): 
+        for j in range(i+1, len(output)):
+            l_i = output[i]
+            l_j = output[j]
+            e = np.round(SM(weightfunc, weightparams, l_i, l_j), 3)
+            output_scores.append(e)
+        
+        
+    
+    #output_scores.append(np.round(SM(weightfunc, weightparams, l, l), 3))
+    l_scores_str = str(output_scores)
+    l_scores_str = l_scores_str[1:-1]
+    
+    #f = open(output_path + f'perm_list_len_{size_l}.txt',  'w')
+    #f.write(l_scores_str)
+    #f.close()
     
     # Creating histogram
     fig, axs = plt.subplots(1, 1, figsize =(10, 7))
-    
-    axs.hist(LS)
-    plt.suptitle(f'Distribution of similarity scores for lists of length {n}')
+    axs.hist(output_scores)
+    plt.suptitle(f'Distribution of similarity scores for lists of length {size_l} with repl{withreplacement}')
     # Show plot
     plt.show()
-    print()
-    print(f'Done generating scores, check file /data/perm_list_len_{n}.txt for result')
-    return(LS)
+    #print()
+    #print(f'Done generating scores, check file /data/perm_list_len_{size_l}.txt for result')
+    return(output, output_scores)
 
     
-        
 
-    
     
 
         
