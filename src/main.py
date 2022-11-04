@@ -8,8 +8,8 @@ This is a temporary script file.
 
  # Import module
 import os
-#path = '/home/nguyetrt/rbo-rank-genelist/src/'
-path="C:\\Users\\ttran\\OneDrive - Indiana University\\2022-AsusZenbook14-sync\\Documents\\2022 - FALL SEMESTER IU\\2022_I552 Independent studies\\RBO\\rbo-rank-genelist\\src\\"
+path = '/home/nguyetrt/rbo-rank-genelist/src/'
+#path="C:\\Users\\ttran\\OneDrive - Indiana University\\2022-AsusZenbook14-sync\\Documents\\2022 - FALL SEMESTER IU\\2022_I552 Independent studies\\RBO\\rbo-rank-genelist\\src\\"
 
 os.chdir(path)
 
@@ -24,7 +24,7 @@ from random import sample
 
 
 from generatedata import comparegeneratedlist
-from generatedata import Smallpermutationwithrepl 
+from generatedata import simulation
 #from generatedata import generatedatadefault
 #from generatedata import similarityscorealldata as SMD
 
@@ -36,6 +36,10 @@ from scipy.stats import shapiro
 from rbo import rbo_modified as SM
 from rbo import wg_geom as wgm, wg_binomial as wbi, wg_poisson as wpo, wg_skellam as wsk, wg_triangular as wtr
 
+
+
+from distfit import distfit
+import fitter
 
 import matplotlib.pyplot as plt
 
@@ -225,66 +229,30 @@ if __name__ == '__main__':
     
     
 # -----------------------------------------------------------------------------
-    # Simulate distribution for small number of elements
-    # WARNING! ONLY EXECUTE WHEN NEEDED. USE ALREADY CREATED FILE INSTEAD
-    source = os.path.dirname(os.getcwd())
-    path = source + '\\data\\'
-    L = []
-    for nb_repl in range(21):
-        fig, axs = plt.subplots(1, 1, figsize = (10, 7))
-        for i in range(1):
-            l_permutations, l_scores = Smallpermutationwithrepl(output_path=path,
-                                                        nb_repl=nb_repl,
-                                                        weightfunc=None,
-                                                        weightparams=None, 
-                                                        nb_randomization=200)
+    # Simulate distribution
+# =============================================================================
+#     dist = distfit(todf=True)
+#     output, output_scores = simulation(withreplacement=True)
+#     results = dist.fit_transform(np.array(output_scores))
+#     dist.plot()
+#     dist.plot_summary()
+#     
+#     f = fitter.Fitter(output_scores)
+#     f.fit()
+#     f.summary()
+# =============================================================================
+    for i in range(10, 51, 10):
+        for j in [0.05, 0.2, 0.5, 1.]:
             
-            L += l_scores
+            output, output_scores = simulation(withreplacement=True, size_l=i, percent_repl=j)
+            dist = distfit(todf=True)
+            results = dist.fit_transform(np.array(output_scores))
+            dist.plot()
+            #dist.plot_summary()
             
-            
-        
-    
-    # OPEN ALREADY GENERATED FILE INSTEAD
-    
-    #f = open(source+f'/data/perm_list_len_{len(l_permutations[0])_repl_{nb_repl}}.txt', "r")    
-    #LSr = f.read().split(',')
-    #LSr = [float(i) for i in LSr]
-
-# =============================================================================
-#     # Creating histogram
-#     fig, axs = plt.subplots(1, 1, figsize = (10, 7))
-#     axs.set_xlim([min(LSr), max(LSr)])
-#     axs.hist(LSr)
-#     plt.suptitle(f'Distribution of similarity scores for lists of length {len(l_permutations[0])} and {nb_repl} replacements')
-#     # Show plot
-#     plt.show()
-# =============================================================================
-    
-        # Creating histogram
-        
-        #axs.set_xlim([min(l_scores), max(l_scores)])
-        axs.hist(l_scores, bins=np.arange(0, 1.1, 0.05), alpha=0.2, color="blue")
-        plt.suptitle(f'Distribution of similarity scores for lists of length {len(l_permutations[0])} and {nb_repl} replacements ({i})')
-        # Show plot
-        plt.show()
-        
-    to_plot = sample(L, k=1000)
-    fig, axs = plt.subplots(1, 1, figsize = (10, 7))
-    axs.hist(to_plot, bins=np.arange(0, 1.1, 0.05), color="green", alpha=0.5)
-    plt.suptitle(f'Distribution of similarity scores for lists of length {len(l_permutations[0])}')
-    plt.show()
-    
-    
-    #Normality test
-# =============================================================================
-#     shapiro(LSr)
-#     data_points = np.array(LSr)   
-# 
-#     sm.qqplot(data_points, line='s', fit=True)
-#     py.show()
-# =============================================================================
-
-
+            f = fitter.Fitter(output_scores)
+            f.fit()
+            f.summary()
 
         
              

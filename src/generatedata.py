@@ -757,14 +757,15 @@ def similarityscorealldata(nbXk, nbrep, dataframe, condition, weightfunc, weight
 
 
 
-def simulation(size_l: int = 10, 
+def simulation(size_l: int = 20, 
                withreplacement: bool = False,
                output_path: str = '/home/nguyetrt/rbo-rank-genelist/data/', 
                weightfunc: list = None, 
                weightparams: list = None, 
-               nb_generatedlist: int = 50,
+               nb_generatedlist: int = 200,
                size_vocabulary: int = 100,
-               Nb_r: int = 1):
+               Nb_r: int = 1, 
+               percent_repl: float = 0.05):
     """
     
 
@@ -789,6 +790,9 @@ def simulation(size_l: int = 10,
     Nb_r: int, optional
         Number of elements that will be replaced if the "withreplacement" parameter is chosen.
         The default is 1
+    
+    percent_repl: float
+        Percentage of replacement in the generated sequence
 
     Returns
     -------
@@ -798,6 +802,7 @@ def simulation(size_l: int = 10,
     
     n = nb_generatedlist
     V = np.arange(0, size_vocabulary, 1)
+    print('Percentage of replacement in the sample', percent_repl)
     
     # part 1: simulate a list of rankings
     
@@ -818,8 +823,9 @@ def simulation(size_l: int = 10,
         while n > 0:
             #seed(n)
             # 1. randomly generate a number Nb_r : this is the number of replacement in the ranking
-            Nb_r = randint(0, size_l)
-            print('Number of replaced items=', Nb_r)
+            maxNb_r = int(size_l*percent_repl)+1
+            Nb_r = randint(0, maxNb_r)
+            #print('Number of replaced items=', Nb_r)
 
             # l = [0, 1, ...., size_l - Nb_r]
             l = list(np.arange(0, size_l - Nb_r))   
@@ -848,12 +854,15 @@ def simulation(size_l: int = 10,
     
     output_scores = []
     
-    for i in range(len(output)): 
-        for j in range(i+1, len(output)):
-            l_i = output[i]
-            l_j = output[j]
-            e = np.round(SM(weightfunc, weightparams, l_i, l_j), 3)
-            output_scores.append(e)
+    # Instead, choose randomly 2 elements at each time
+    n = nb_generatedlist
+    while n > 0:
+        l_i = choices(output)[0]
+        l_j = choices(output)[0]
+        e = np.round(SM(weightfunc, weightparams, l_i, l_j), 3)
+        output_scores.append(e)
+        n -= 1
+    
         
         
     
@@ -868,13 +877,41 @@ def simulation(size_l: int = 10,
     # Creating histogram
     fig, axs = plt.subplots(1, 1, figsize =(10, 7))
     axs.hist(output_scores)
-    plt.suptitle(f'Distribution of similarity scores for lists of length {size_l} with repl{withreplacement}')
+    plt.suptitle(f'Distribution of SMS of {nb_generatedlist} elts with repl{withreplacement}, perctrp ={percent_repl}, list_size={size_l}')
     # Show plot
     plt.show()
     #print()
     #print(f'Done generating scores, check file /data/perm_list_len_{size_l}.txt for result')
     return(output, output_scores)
 
+
+# =============================================================================
+#     from distfit import distfit
+#     dist = distfit(todf=True)
+#     output, output_scores = simulation(withreplacement=True)
+#     
+#     # Search for best theoretical fit on your empirical data
+#     results = dist.fit_transform(np.array(output_scores))
+#     
+#     
+#     dist.plot()
+#     
+#     # Make plot
+#     dist.plot_summary()
+
+# =============================================================================
+# import fitter
+# f = fitter.Fitter(output_scores)
+# 
+# # just a trick to use only 10 distributions instead of 80 to speed up the fitting
+# f.distributions = f.distributions()
+# # fit and plot
+# f.fit()
+# f.summary()
+# =============================================================================
+#     
+# =============================================================================
+    
     
 
     
