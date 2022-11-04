@@ -241,18 +241,20 @@ if __name__ == '__main__':
 #     f.fit()
 #     f.summary()
 # =============================================================================
-    for i in range(10, 51, 10):
-        for j in [0.05, 0.2, 0.5, 1.]:
+    for j in [0.05, 0.1, 0.2, 0.3, 0.5]:
+        for i in range(10, 51, 10):        
             
             output, output_scores = simulation(withreplacement=True, size_l=i, percent_repl=j)
-            dist = distfit(todf=True)
+            dist = distfit(todf=True, distr=['norm', 'expon', 'lognorm', 'gamma', 'dweibull', 
+                                             'logistic','pareto', 't', 'burr', 'chi2', 'frechet_r[x]]',
+                                             'cauchy'])
             results = dist.fit_transform(np.array(output_scores))
             dist.plot()
-            #dist.plot_summary()
+            dist.plot_summary()
             
-            f = fitter.Fitter(output_scores)
-            f.fit()
-            f.summary()
+            #f = fitter.Fitter(output_scores)
+            #f.fit()
+            #f.summary()
 
         
              
