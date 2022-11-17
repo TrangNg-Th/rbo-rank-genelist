@@ -2,8 +2,8 @@
 
 import numpy as np
 import string
-from rbo import rbo, rbo_modified, wg_geom
-
+from rbo import rbo
+from rbomod import
 
 
 TESTS = [
