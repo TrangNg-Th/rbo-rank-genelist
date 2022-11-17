@@ -51,57 +51,65 @@ from random import random
 
 
 
-# Set arguments 
-parser = argparse.ArgumentParser(description='The following section describes the parameters')
 
-parser.add_argument('-data', type=str, 
+
+
+#=============================================================================================================
+if __name__=='__main__':
+    
+
+
+
+    # Set arguments 
+    parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument('-data', type=str, 
                     default = 'N', 
                     help="If the option data is Y, then the user will provide\
                         the data (under the csv format). If not, then the user \
                         can give parameters nbXk, nbrep, N, to simulate data")
 
-parser.add_argument('-nbXk', type=int, 
+    parser.add_argument('-nbXk', type=int, 
                     default = '3', 
                     help="Number of samples to generate from initial sample (positive INT)")
 
-parser.add_argument('-nbrep', type=int,
+    parser.add_argument('-nbrep', type=int,
                     default = '10', 
                     help="Number of replicates to generate for each sample \
                         (positive INT)")
 
-parser.add_argument('-N', type=int, 
-                    default = '1000', 
-                    help="Total number of indiv/ gene for sample generation \
+    parser.add_argument('-N', type=int, 
+                        default = '1000', 
+                        help="Total number of indiv/ gene for sample generation \
                         (positive INT)")
 
-parser.add_argument('-cat', 
-                    type=str, 
+    parser.add_argument('-cat', 
+                        type=str, 
                     default = 'H', 
                     help="Category. H or MH or M or LM or L")
 
-parser.add_argument('-expid', 
+    parser.add_argument('-expid', 
                     type=str, 
                     default = '2', 
                     help="The id of experiment to test on (STR)")
 
-parser.add_argument('-topk', 
+    parser.add_argument('-topk', 
                     type=int, 
                     default = '20', 
                     help="Top k first elements within the \
                         category to check(positive INT)")
 
-parser.add_argument('-strict_k', 
+    parser.add_argument('-strict_k', 
                     type=bool, 
                     default = 'False', 
                     help="If True, the user only cares about the top k elements")
                         
-parser.add_argument('-wg_func_name', 
+    parser.add_argument('-wg_func_name', 
                     type=str, 
                     default = 'poisson', 
                     help="Weighting function to be chosen from, \
                         among the list ['geometric', 'poisson', 'skellam', 'triangular']")
                         
-parser.add_argument('-p_geometric', 
+    parser.add_argument('-p_geometric', 
                     type=str, 
                     default = 'None', 
                     help="Parameters associated with a certain weighting function \
@@ -109,25 +117,7 @@ parser.add_argument('-p_geometric',
                                    'poisson'  : {'lambda': k},\
                                    'skellam'  : {'mu1': 2*k, 'mu2': k}, \
                                    'triangular': {'topk': k}} ")
-parser.add_argument('-lamda_poisson', 
-                    type=str, 
-                    default = 'None', 
-                    help="Parameters associated with a certain weighting function \
-                        default = {'geometric': {'p': 0.5}, \
-                                   'poisson'  : {'lambda': k},\
-                                   'skellam'  : {'mu1': 2*k, 'mu2': k}, \
-                                   'triangular': {'topk': k}} ")
-
-parser.add_argument('-mu1_skellam', 
-                    type=str, 
-                    default = 'None', 
-                    help="Parameters associated with a certain weighting function \
-                        default = {'geometric': {'p': 0.5}, \
-                                   'poisson'  : {'lambda': k},\
-                                   'skellam'  : {'mu1': 2*k, 'mu2': k}, \
-                                   'triangular': {'topk': k}} ")
-                            
-parser.add_argument('-mu2_skellam', 
+    parser.add_argument('-lamda_poisson', 
                     type=str, 
                     default = 'None', 
                     help="Parameters associated with a certain weighting function \
@@ -136,7 +126,25 @@ parser.add_argument('-mu2_skellam',
                                    'skellam'  : {'mu1': 2*k, 'mu2': k}, \
                                    'triangular': {'topk': k}} ")
 
-parser.add_argument('-topk_triangular', 
+    parser.add_argument('-mu1_skellam', 
+                    type=str, 
+                    default = 'None', 
+                    help="Parameters associated with a certain weighting function \
+                        default = {'geometric': {'p': 0.5}, \
+                                   'poisson'  : {'lambda': k},\
+                                   'skellam'  : {'mu1': 2*k, 'mu2': k}, \
+                                   'triangular': {'topk': k}} ")
+                            
+    parser.add_argument('-mu2_skellam', 
+                    type=str, 
+                    default = 'None', 
+                    help="Parameters associated with a certain weighting function \
+                        default = {'geometric': {'p': 0.5}, \
+                                   'poisson'  : {'lambda': k},\
+                                   'skellam'  : {'mu1': 2*k, 'mu2': k}, \
+                                   'triangular': {'topk': k}} ")
+
+    parser.add_argument('-topk_triangular', 
                     type=str, 
                     default = 'None', 
                     help="Parameters associated with a certain weighting function \
@@ -146,69 +154,69 @@ parser.add_argument('-topk_triangular',
                                    'triangular': {'topk': k}} ")
                             
                             
-parser.add_argument('-simRSM', 
+    parser.add_argument('-simRSM', 
                     type=bool, 
                     default = 'True', 
                     help="If True, we will generate random lists from which \
                         we calculate RSM scores, then build RSM scores distribution.")
                         
-parser.add_argument('-withreplacement', 
+    parser.add_argument('-withreplacement', 
                     type=bool, 
                     default = 'True', 
                     help="Parameter that sets if we expect replacement in the sample") 
                         
-parser.add_argument('-percent_repl', 
+    parser.add_argument('-percent_repl', 
                     type=float, 
                     default = '0.25', 
                     help="Replacement rate")
                         
-args = parser.parse_args()
+    args = parser.parse_args()
 
 
-# RETAIN ARGUMENTS
+    # RETAIN ARGUMENTS
 # =============================================================================
-dataopt = args.data
-nbXk = args.nbXk # Number of experiments k
-nbrep = args.nbrep  # Number of replicates from each Xk
-N = args.N
-
-condition = args.cat
-expid = args.expid
-topk = args.topk
-strict_k = args.strict_k
-
-
-# Weighting function parameter
-wg_func_name = args.wg_func_name
-p = args.p_geometric
-lamb = args.lamda_poisson
-mu1 = args.mu1_skellam
-mu2 = args.mu2_skellam
-topk_triangular = args.topk_triangular
-
-# RSM simulation parameters for distribution
-simRSMtest = args.simRSM
-repltest = args.withreplacement
-replrate = args.percent_repl
+    dataopt = args.data
+    nbXk = args.nbXk # Number of experiments k
+    nbrep = args.nbrep  # Number of replicates from each Xk
+    N = args.N
+    
+    condition = args.cat
+    expid = args.expid
+    topk = args.topk
+    strict_k = args.strict_k
 
 
-# Create the dictionary of parameters for weighting function:
-if (p == 'None') & (lamb == 'None') & (mu1 == 'None') & (mu2 == 'None') & \
+    # Weighting function parameter
+    wg_func_name = args.wg_func_name
+    p = args.p_geometric
+    lamb = args.lamda_poisson
+    mu1 = args.mu1_skellam
+    mu2 = args.mu2_skellam
+    topk_triangular = args.topk_triangular
+
+    # RSM simulation parameters for distribution
+    simRSMtest = args.simRSM
+    repltest = args.withreplacement
+    replrate = args.percent_repl
+
+
+    # Create the dictionary of parameters for weighting function:
+    if (p == 'None') & (lamb == 'None') & (mu1 == 'None') & (mu2 == 'None') & \
     (topk_triangular == 'None') :
-    print('User default parameters of weighting function')
-    params_wg_func = None
+        print('User default parameters of weighting function')
+        params_wg_func = None
 
-elif (p != 'None'):
-    params_wg_func = {'p': p}
+    elif (p != 'None'):
+        params_wg_func = {'p': p}
     
-elif (lamb != 'None'):
-    params_wg_func = {'lambda': lamb}
+    elif (lamb != 'None'):
+        params_wg_func = {'lambda': lamb}
     
-elif (mu1 != 'None') | (mu2 != 'None'):
-    params_wg_func = {'mu1': mu1, 'mu2': mu2}
+    elif (mu1 != 'None') | (mu2 != 'None'):
+        params_wg_func = {'mu1': mu1, 'mu2': mu2}
     
-elif (topk_triangular != None):
-    params_wg_func = {'topk': topk_triangular}
+    elif (topk_triangular != None):
+        params_wg_func = {'topk': topk_triangular}
     
 # =============================================================================
 # Clear folder for data
@@ -216,58 +224,58 @@ elif (topk_triangular != None):
 
 
 
-source = os.path.dirname(os.getcwd())
-path = source + '/data/'
-files = glob.glob(path+'*')
-for f in files:
-    os.remove(f)
+    source = os.path.dirname(os.getcwd())
+    path = source + '/data/'
+    files = glob.glob(path+'*')
+    for f in files:
+        os.remove(f)
 # =============================================================================
 # Load data
 # =============================================================================
 
-if dataopt == "Y":
-    print('Please put the data you want to load in the current directory')
-    path = os.path.dirname(os.getcwd())
-    print('We are currently at:', path)
-    print()
-    filename = input("Enter the full file name (format .csv required)")
-    dataframe = pd.read_csv(path+filename, index_col=0)
-else :
-    print('No data loaded, will generate data using original parameter')
-    dataframe, list_Xk = generatedatadefault(nbXk=nbXk, nbrep=nbrep, N=N, sd=1,
+    if dataopt == "Y":
+        print('Please put the data you want to load in the current directory')
+        path = os.path.dirname(os.getcwd())
+        print('We are currently at:', path)
+        print()
+        filename = input("Enter the full file name (format .csv required)")
+        dataframe = pd.read_csv(path+filename, index_col=0)
+    else :
+        print('No data loaded, will generate data using original parameter')
+        dataframe, list_Xk = generatedatadefault(nbXk=nbXk, nbrep=nbrep, N=N, sd=1,
                                              replrate=replrate)
 
 # =============================================================================
 
 # Display the dissimilarity of each pairwise element for the selected sample
 
-c = (dataframe[f'C{expid}s'] == condition)
-l = list(dataframe[c].sort_values(f'C{expid}', ascending=False).index)
+    c = (dataframe[f'C{expid}s'] == condition)
+    l = list(dataframe[c].sort_values(f'C{expid}', ascending=False).index)
 
 
 # Display
-for i in range(1, nbrep+1):
+    for i in range(1, nbrep+1):
      
-     print()
-     print('-'*50)
-     print(f'Condition {expid} vs replicate {i}')
-     print(f'Top {topk} ranked genes')
-     print('.'*30)
-     cprime = (dataframe[f'C{expid}_p{i}s'] == condition)    
-     lprime = list(dataframe[cprime].sort_values(f'C{expid}_p{i}', 
+        print()
+        print('-'*50)
+        print(f'Condition {expid} vs replicate {i}')
+        print(f'Top {topk} ranked genes')
+        print('.'*30)
+        cprime = (dataframe[f'C{expid}_p{i}s'] == condition)    
+        lprime = list(dataframe[cprime].sort_values(f'C{expid}_p{i}', 
                                                 ascending=False).index)
     
      # Display the topk elements
-     for k in range(topk):
-         print(f'Rank {k+1} : {l[k]} --- {lprime[k]} --> Equal: {l[k] == lprime[k]} ') 
+         for k in range(topk):
+             print(f'Rank {k+1} : {l[k]} --- {lprime[k]} --> Equal: {l[k] == lprime[k]} ') 
 # =============================================================================
 # Calculate RSM scores for the gene rankings
 
-numcols = [i for i in dataframe.columns if 's' not in i]
+    numcols = [i for i in dataframe.columns if 's' not in i]
 
-# Create dataframe for RSM scores
-df_rsm = pd.DataFrame(index=numcols, columns = numcols)
-df_rsm = df_rsm.replace(np.nan, 1.)
+    # Create dataframe for RSM scores
+    df_rsm = pd.DataFrame(index=numcols, columns = numcols)
+    df_rsm = df_rsm.replace(np.nan, 1.)
 
 # Calculate RSM scores for the given category
 for lstS in numcols:
