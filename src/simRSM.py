@@ -17,8 +17,6 @@ from rbomod import rbo_modified as RSM
 
 #import matplotlib.pyplot as plt
 
-seed(0)
-
 
 def simulation(topk : int = 10,
                strict_k : bool = True,
@@ -26,7 +24,7 @@ def simulation(topk : int = 10,
                withreplacement: bool = False,
                wg_func_name: str = 'poisson', 
                params_wg_func: dict = None, 
-               nb_generatedlist: int = 100,
+               nb_generatedlist: int = 300,
                size_vocabulary: int = 100000,
                Nb_r: int = 1, 
                percent_repl: float = 0.1, 
@@ -73,7 +71,7 @@ def simulation(topk : int = 10,
     V = np.arange(0, size_vocabulary, 1)
     print('Simulation of lists started...')
     
-    
+    seed(0)
     # part 1: simulate a list of rankings
     
     if withreplacement == False:  # if there's no replacement to be considered in the model

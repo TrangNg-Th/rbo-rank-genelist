@@ -131,7 +131,7 @@ def transitionMatrix(
 
     """
     
-    seed(sd)
+    
     
     if p0.all() == None : return None
     
@@ -299,7 +299,6 @@ def generatelist(
     dk : DATAFRAME OF GENE EXPRESSIONS OF conditionXk, conditionX0
     """
     
-    seed(sd)
     dk = pd.DataFrame(index=[f'gene_{i}' for i in range(n)])
     
     # PART 1 :    
@@ -351,7 +350,7 @@ def generatelist(
     
     # transition matrix base from condition 0
     pk, statek, tmatk, pkprimelist, statekplist, ntmatklist = transitionMatrix(\
-                p0=p0, matrix=mk, sd=seed, nb_replicates=nb_replicates,
+                p0=p0, matrix=mk, sd=sd, nb_replicates=nb_replicates,
                 error_rate=error_rate) 
 
     dk[Xk] = pk  # memorize gene expressions

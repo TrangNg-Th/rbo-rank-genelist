@@ -61,7 +61,7 @@ if __name__=='__main__':
     parser.add_argument('-data', type=str, default = 'N', 
                         help="If the option data is Y, then the user will provide the data (under the csv format). If not, then the user can give parameters nbXk, nbrep, N, to simulate data")
 
-    parser.add_argument('-nbXk', type=int, default = '3', 
+    parser.add_argument('-nbXk', type=int, default = '1', 
                         help="Number of samples to generate from initial sample (positive INT)")
 
     parser.add_argument('-nbrep', type=int, default = '10', 
@@ -80,7 +80,7 @@ if __name__=='__main__':
                         help="Top k first elements within the \
                         category to check(positive INT)")
 
-    parser.add_argument('-strict_k', type=bool, default = 'True', 
+    parser.add_argument('-strict_k', type=bool, default = 'False', 
                         help="If True, the user only cares about the top k elements")
                         
     parser.add_argument('-wg_func_name', type=str, default = 'poisson', 
@@ -128,7 +128,7 @@ if __name__=='__main__':
     parser.add_argument('-withreplacement', type=bool, default = 'True', 
                         help="Parameter that sets if we expect replacement in the sample") 
                         
-    parser.add_argument('-percent_repl', type=float, default = '0.1', help="Replacement rate")
+    parser.add_argument('-percent_repl', type=float, default = '0.25', help="Replacement rate")
                         
     args = parser.parse_args()
 
