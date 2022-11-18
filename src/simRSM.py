@@ -8,6 +8,7 @@ Created on Wed Nov 16 13:21:27 2022
 from random import sample
 from random import choices
 from random import randint
+from random import seed
 
 import os
 
@@ -16,7 +17,7 @@ from rbomod import rbo_modified as RSM
 
 #import matplotlib.pyplot as plt
 
-
+seed(0)
 
 
 def simulation(topk : int = 10,
@@ -28,8 +29,8 @@ def simulation(topk : int = 10,
                nb_generatedlist: int = 100,
                size_vocabulary: int = 100000,
                Nb_r: int = 1, 
-               percent_repl: float = 0.05, 
-               percent_shuffle: float = 0.05
+               percent_repl: float = 0.1, 
+               percent_shuffle: float = 0.1
                ):
     """
     
@@ -139,6 +140,7 @@ def simulation(topk : int = 10,
             
     print('Number of elements to be generated=', len(output_rnks[0]))
     print('Percentage of replacement in the sample=', percent_repl)
+    print('Percentage of shuffling in the sample=', percent_shuffle)
 
     #===============================================================
 

@@ -2,6 +2,7 @@
 import numpy as np
 import os
 
+
 # =============================================================================
 # from scipy.optimize import newton
 # from random import random
@@ -13,7 +14,7 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 
-def maximaperbloc(X: list, m = 30):
+def maximaperbloc(X: list, m = 10):
     """
     Parameters
     ----------
@@ -33,12 +34,12 @@ def maximaperbloc(X: list, m = 30):
     
     n = len(X)
     
-    assert n > m, "The sample size is not big enough, please enter a bigger sample"
-    assert n % m == 0, "Please enter a multiple of 10"
+    if n >= 1000:
+        m = 100
     
     Z = []
     
-    inc = n// m
+    inc = n // m
     for i in range(m-1):
         z = max(X[i*inc : (i+1) * inc])
         Z.append(z)

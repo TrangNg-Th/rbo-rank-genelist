@@ -62,9 +62,7 @@ def ToleranceTransMat(error_rate : float = 0.05,
         Markov transition matrix
 
     """
-    
-
-    
+  
     matrix = np.empty([len(states), len(states)])
     
     for j in range(len(states)):
@@ -74,12 +72,12 @@ def ToleranceTransMat(error_rate : float = 0.05,
             if i != j:  # if we're not on the diagonal
             
                 # matrix[i, j] = error_rate / number of cells - 1 
-                matrix[i,j] = error_rate / (len(states) - 1)  
+                matrix[i,j] = np.round(error_rate / (len(states) - 1), 3)  
             else:
                 
                 # if we're on the diagonal
-                matrix[i, j] = 1 - error_rate  
-    
+                matrix[i, j] = np.round(1 - error_rate , 1) 
+
     return(matrix)
             
 
@@ -182,16 +180,19 @@ def transitionMatrix(
     
     
     
-    # if noise was requested  
+    # transition matrix for xkprime 
     ntmatlist = []
     for rep in range(nb_replicates):
         pkprime, stateprime = [], []
         
         if error_rate is None: 
+
             nmatrix = ToleranceTransMat()
         
         else:
             nmatrix = ToleranceTransMat(error_rate = error_rate)
+
+        
         ntmat = pd.DataFrame(nmatrix, index=states, columns=states)  # noise transition matrix
         
         # Save the transition matrices
@@ -222,7 +223,7 @@ def transitionMatrix(
         
         pkprimelist.append(pkprime)  # list of all the noisy replicates
         stateprimelist.append(stateprime)
-        
+    
     return(pk, state, tmat, pkprimelist, stateprimelist, ntmatlist)
 
  
@@ -233,7 +234,7 @@ def transitionMatrix(
 ########### Generate data
 def generatelist(
     n: int = 1000,
-    Xk: str = 'Condition_1',
+    Xk: str = 'C1',
     mk = None,  # transition matrix to go from condition 0 to condition k
     sd = 1, 
     nb_replicates: int = 1,
@@ -352,6 +353,7 @@ def generatelist(
     pk, statek, tmatk, pkprimelist, statekplist, ntmatklist = transitionMatrix(\
                 p0=p0, matrix=mk, sd=seed, nb_replicates=nb_replicates,
                 error_rate=error_rate) 
+
     dk[Xk] = pk  # memorize gene expressions
     dk[Xk + 's'] = statek  # memorize states
     
@@ -360,15 +362,18 @@ def generatelist(
     # Save the transition matrices in a dictionary
     d = {}
     d[Xk] = tmatk
+
     
     # For the Xkprime
     for i in range(len(statekplist)):
-        dk[Xk + '_p' + str(i+1)] = pkprimelist[i]
+        dk[Xk + '_p' + str(i+1)] = pkprimelist[i]        
         dk[Xk + '_p' + str(i+1) + 's'] = statekplist[i]
         d[Xk + '_p' + str(i+1)] = ntmatklist[i]
         
         
+        
     dk = dk.round(3)
+
     return(dk, d)
 
 

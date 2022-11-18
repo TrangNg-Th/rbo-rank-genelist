@@ -10,7 +10,6 @@ Module to generate automatically all genelists
 
 import numpy as np
 import pandas as pd
-import argparse  
 import os
 
 from random import random
@@ -21,35 +20,37 @@ from simgenelist import generatelist
 
 
 
-# Parse arguments
-parser = argparse.ArgumentParser()
-
-parser.add_argument('-nbXk', type=int, 
-                    default = '10', 
-                    help="Number of samples to generate from initial sample (positive INT)")
-
-parser.add_argument('-nbrep', type=int,
-                    default = '10', 
-                    help="Number of replicates to generate for each sample \
-                        (positive INT)")
-
-parser.add_argument('-N', type=int, 
-                    default = '100', 
-                    help="Total number of indiv/ gene for sample generation \
-                        (positive INT)")
-
-args = parser.parse_args()
-
-#------------------------------------------------------------------------
-# RETAIN ARGUMENTS
-
-nbXk = args.nbXk # Number of experiments k
-nbrep = args.nbrep  # Number of replicates from each Xk
-N = args.N
-    
-#------------------------------------------------------------------------
-
-
+# =============================================================================
+# # Parse arguments
+# parser = argparse.ArgumentParser()
+# 
+# parser.add_argument('-nbXk', type=int, 
+#                     default = '10', 
+#                     help="Number of samples to generate from initial sample (positive INT)")
+# 
+# parser.add_argument('-nbrep', type=int,
+#                     default = '10', 
+#                     help="Number of replicates to generate for each sample \
+#                         (positive INT)")
+# 
+# parser.add_argument('-N', type=int, 
+#                     default = '100', 
+#                     help="Total number of indiv/ gene for sample generation \
+#                         (positive INT)")
+# 
+# args = parser.parse_args()
+# 
+# #------------------------------------------------------------------------
+# # RETAIN ARGUMENTS
+# 
+# nbXk = args.nbXk # Number of experiments k
+# nbrep = args.nbrep  # Number of replicates from each Xk
+# N = args.N
+#     
+# #------------------------------------------------------------------------
+# 
+# 
+# =============================================================================
 
 def generatedatadefault(nbXk, nbrep, N, sd, replrate):
     
@@ -78,7 +79,6 @@ def generatedatadefault(nbXk, nbrep, N, sd, replrate):
     """
     
     list_Xk = []  # list of transition matrices for k experiments X
-    
     for n in range(nbXk):
         seed(n)
         res = []
@@ -89,27 +89,31 @@ def generatedatadefault(nbXk, nbrep, N, sd, replrate):
             res.append([k/s for k in r])
             restmp = np.array(res)
         list_Xk.append(restmp)
-    
-    
-    
+        
 # =============================================================================
 #     print('Generating data....')
 #     print(f'Sample size : {N}')
 #     print(f'Number of experiments: {nbXk}')
 #     print()
 # =============================================================================
-    dataframe, transmatrix = generatelist(N, Xk='C1', 
-                                          nb_replicates=nbrep, mk=list_Xk[0]) 
+
+    dataframe, transmatrix = generatelist(n=N, Xk='C1', nb_replicates=nbrep, sd=1,
+                                          mk=restmp, error_rate=replrate) 
+
 
     sd = 2
     for mat in list_Xk[1:]:
         name = 'C' + str(sd)
-        dk, d = generatelist(N, Xk=name, sd=sd, nb_replicates=nbrep, mk=mat,
+        dk, d = generatelist(N, Xk=name, sd=sd, nb_replicates=nbrep, mk=mat, 
                              error_rate=replrate)
+
         dataframe = pd.concat([dataframe, dk[dk.columns[2:]]], axis=1)
         transmatrix.update(d)
         sd += 1
+    list_Xk.append(transmatrix)
 
+    
+    
     # Export data generated
     source = os.path.dirname(os.getcwd())
     path = source + '/data/'
@@ -119,7 +123,7 @@ def generatedatadefault(nbXk, nbrep, N, sd, replrate):
     
     # Export the transition matrix
     with open(path+'Tmatrix.txt', 'w') as f:
-        count = 1
+        count = 0
         for line in list_Xk:
             f.write(f'Transition matrix of replicates of experiment {count}\n')
             f.write("\n")
